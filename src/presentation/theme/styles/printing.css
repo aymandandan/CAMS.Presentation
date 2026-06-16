@@ -1,0 +1,25 @@
+@media print {
+  /* Hide interactive elements */
+  .MuiButtonBase-root, /* buttons */
+  .MuiIconButton-root, /* icon buttons */
+  .MuiChip-root, /* chips (status/priority) - optional */
+  .MuiDialog-root, /* dialogs */
+  header,
+  nav,
+  footer {
+    display: none !important;
+  }
+
+  /* Remove shadows and borders for printing */
+  .MuiPaper-root {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure full width */
+  .MuiContainer-root {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}
