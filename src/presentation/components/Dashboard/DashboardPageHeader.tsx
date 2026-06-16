@@ -5,7 +5,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import { Can } from "@/presentation/components/Can";
 import { Permissions } from "@/domain/shared/Permissions";
-import CustomDatePicker from "../common/CustomDatePicker";
+// import CustomDatePicker from "../common/CustomDatePicker";
 
 export default function DashboardPageHeader() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function DashboardPageHeader() {
         CAMS Dashboard
       </Typography>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-        <CustomDatePicker label="Filter period" />
+        {/* <CustomDatePicker label="Filter period" /> */}
         <Can requiredPermissions={[Permissions.WorkOrders.Create]}>
           <Button
             variant="contained"

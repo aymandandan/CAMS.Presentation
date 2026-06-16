@@ -2,80 +2,135 @@ import SvgIcon from "@mui/material/SvgIcon";
 
 export default function CAMSIcon() {
   return (
-    <SvgIcon sx={{ height: 21, width: 100, mr: 2 }}>
+    <SvgIcon sx={{ height: 48, width: 120, mr: 2 }}>
       <svg
-        width={100}
-        height={21}
-        viewBox="0 0 100 21"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 160 48"
+        width="100%"
+        height="100%"
+        role="img"
+        aria-label="CAMS Logo"
       >
-        {/* Gear hub – filled dark blue */}
-        <circle cx="10" cy="10" r="5.5" fill="#1E3A8A" />
+        <defs>
+          <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#3B82F6" />
+            <stop offset="100%" stop-color="#14B8A6" />
+          </linearGradient>
 
-        {/* Barcode inside the gear – symbolises IMS (inventory) */}
-        <rect x="7" y="7" width="0.6" height="6" fill="#FFFFFF" />
-        <rect x="8" y="6.5" width="0.8" height="7" fill="#FFFFFF" />
-        <rect x="9.2" y="7.5" width="0.4" height="5" fill="#FFFFFF" />
-        <rect x="10" y="6" width="1.0" height="8" fill="#FFFFFF" />
-        <rect x="11.5" y="7.2" width="0.5" height="5.6" fill="#FFFFFF" />
-        <rect x="12.5" y="6.8" width="0.7" height="6.4" fill="#FFFFFF" />
+          <filter id="iconShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow
+              dx="0"
+              dy="4"
+              stdDeviation="6"
+              flood-color="#3B82F6"
+              flood-opacity="0.25"
+            />
+          </filter>
 
-        {/* Gear teeth – varying widths & lengths to echo a barcode pattern */}
-        <g fill="#1E3A8A">
-          <g transform="translate(10,10) rotate(0)">
-            <rect x="5.5" y="-0.6" width="2.5" height="1.2" />
+          <filter id="textShadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow
+              dx="0"
+              dy="2"
+              stdDeviation="2"
+              flood-color="#0F172A"
+              flood-opacity="0.25"
+            />
+          </filter>
+
+          <clipPath id="iconClip">
+            <rect x="0" y="0" width="44" height="44" rx="12" />
+          </clipPath>
+
+          <clipPath id="clipTL">
+            <polygon points="0,0 44,0 0,44" />
+          </clipPath>
+          <clipPath id="clipBR">
+            <polygon points="44,0 44,44 0,44" />
+          </clipPath>
+
+          <g id="gearMaskShape">
+            <circle
+              cx="22"
+              cy="22"
+              r="18"
+              pathLength="100"
+              fill="none"
+              stroke="black"
+              stroke-width="4.5"
+              stroke-dasharray="6.25 6.25"
+              stroke-dashoffset="-28.125"
+            />
+            <circle
+              cx="22"
+              cy="22"
+              r="14"
+              fill="none"
+              stroke="black"
+              stroke-width="4.5"
+            />
+            <circle cx="22" cy="22" r="7" fill="black" />
+            <path
+              d="M 22 6 A 16 16 0 1 0 22 38 L 22 34 A 12 12 0 1 1 22 10 Z"
+              fill="black"
+            />
           </g>
-          <g transform="translate(10,10) rotate(30)">
-            <rect x="5.5" y="-1" width="3" height="2" />
-          </g>
-          <g transform="translate(10,10) rotate(60)">
-            <rect x="5.5" y="-0.4" width="2" height="0.8" />
-          </g>
-          <g transform="translate(10,10) rotate(90)">
-            <rect x="5.5" y="-0.75" width="3.5" height="1.5" />
-          </g>
-          <g transform="translate(10,10) rotate(120)">
-            <rect x="5.5" y="-1.1" width="2.5" height="2.2" />
-          </g>
-          <g transform="translate(10,10) rotate(150)">
-            <rect x="5.5" y="-0.5" width="3.2" height="1" />
-          </g>
-          <g transform="translate(10,10) rotate(180)">
-            <rect x="5.5" y="-0.9" width="2.8" height="1.8" />
-          </g>
-          <g transform="translate(10,10) rotate(210)">
-            <rect x="5.5" y="-0.45" width="3" height="0.9" />
-          </g>
-          <g transform="translate(10,10) rotate(240)">
-            <rect x="5.5" y="-0.65" width="2.3" height="1.3" />
-          </g>
-          <g transform="translate(10,10) rotate(270)">
-            <rect x="5.5" y="-1.25" width="3.5" height="2.5" />
-          </g>
-          <g transform="translate(10,10) rotate(300)">
-            <rect x="5.5" y="-0.35" width="2" height="0.7" />
-          </g>
-          <g transform="translate(10,10) rotate(330)">
-            <rect x="5.5" y="-0.8" width="2.8" height="1.6" />
+
+          <mask id="bottomRightMask">
+            <polygon points="44,0 44,44 0,44" fill="white" />
+            <use href="#gearMaskShape" />
+          </mask>
+        </defs>
+
+        <g transform="translate(0, 2)" filter="url(#iconShadow)">
+          <g clip-path="url(#iconClip)">
+            <polygon
+              points="44,0 44,44 0,44"
+              fill="url(#brandGrad)"
+              mask="url(#bottomRightMask)"
+            />
+
+            <g clip-path="url(#clipTL)">
+              <circle
+                cx="22"
+                cy="22"
+                r="18"
+                pathLength="100"
+                fill="none"
+                stroke="url(#brandGrad)"
+                stroke-width="4.5"
+                stroke-dasharray="6.25 6.25"
+                stroke-dashoffset="-28.125"
+              />
+              <circle
+                cx="22"
+                cy="22"
+                r="14"
+                fill="none"
+                stroke="url(#brandGrad)"
+                stroke-width="4.5"
+              />
+              <circle cx="22" cy="22" r="7" fill="url(#brandGrad)" />
+              <path
+                d="M 22 6 A 16 16 0 1 0 22 38 L 22 34 A 12 12 0 1 1 22 10 Z"
+                fill="url(#brandGrad)"
+              />
+            </g>
           </g>
         </g>
 
-        {/* Green accent bar – suggests an asset tag / checked status */}
-        <rect x="20" y="4" width="2" height="12" rx="1" fill="#10B981" />
-
-        {/* Wordmark – monospace font for a tech-forward look */}
-        <text
-          x="24"
-          y="14"
-          fontFamily="'Courier New', Courier, monospace"
-          fontWeight="800"
-          fontSize="12"
-          letterSpacing="1"
-          fill="#1E3A8A"
-        >
-          CAMS
-        </text>
+        <g transform="translate(52, 0)" filter="url(#textShadow)">
+          <text
+            x="0"
+            y="38"
+            font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+            font-weight="900"
+            font-size="28"
+            fill="url(#brandGrad)"
+            letter-spacing="-0.5"
+          >
+            CAMS
+          </text>
+        </g>
       </svg>
     </SvgIcon>
   );

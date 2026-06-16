@@ -33,11 +33,11 @@ const AppBar = styled(MuiAppBar)(({ theme }) => ({
 
 const LogoContainer = styled("div")({
   position: "relative",
-  height: 30,
+  height: 64,
   display: "flex",
   alignItems: "center",
   "& img": {
-    maxHeight: 30,
+    maxHeight: 64,
   },
 });
 
