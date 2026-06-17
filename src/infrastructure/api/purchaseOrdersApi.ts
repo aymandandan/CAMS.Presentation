@@ -6,44 +6,55 @@ import type {
   GetPurchaseOrdersQueryParams,
 } from "@/domain/purchaseOrders/PurchaseOrderTypes";
 import type { PaginatedList } from "@/domain/shared";
-
-function extractData<T>(response: any): T {
-  const result = response.data;
-  if (!result.succeeded) {
-    const message =
-      result.errors?.[0]?.description ?? result.error ?? "Request failed";
-    throw new Error(message);
-  }
-  return result.data;
-}
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 export async function getPurchaseOrders(
-  params: GetPurchaseOrdersQueryParams
+  params: GetPurchaseOrdersQueryParams,
 ): Promise<PaginatedList<PurchaseOrderListItemDto>> {
-  const response = await axiosClient.get("/purchaseorders", { params });
-  return extractData<PaginatedList<PurchaseOrderListItemDto>>(response);
+  try {
+    const response = await axiosClient.get("/purchaseorders", { params });
+    return extractData<PaginatedList<PurchaseOrderListItemDto>>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function getPurchaseOrderById(
-  id: string
+  id: string,
 ): Promise<PurchaseOrderDetailsDto> {
-  const response = await axiosClient.get(`/purchaseorders/${id}`);
-  return extractData<PurchaseOrderDetailsDto>(response);
+  try {
+    const response = await axiosClient.get(`/purchaseorders/${id}`);
+    return extractData<PurchaseOrderDetailsDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function createPurchaseOrder(
-  data: CreatePurchaseOrderRequest
+  data: CreatePurchaseOrderRequest,
 ): Promise<string> {
-  const response = await axiosClient.post("/purchaseorders", data);
-  return extractData<string>(response);
+  try {
+    const response = await axiosClient.post("/purchaseorders", data);
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function receivePurchaseOrder(id: string): Promise<void> {
-  const response = await axiosClient.post(`/purchaseorders/${id}/receive`);
-  extractData(response); // result may not have data
+  try {
+    const response = await axiosClient.post(`/purchaseorders/${id}/receive`);
+    extractData(response); // result may not have data
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function cancelPurchaseOrder(id: string): Promise<void> {
-  const response = await axiosClient.patch(`/purchaseorders/${id}/cancel`);
-  extractData(response);
+  try {
+    const response = await axiosClient.patch(`/purchaseorders/${id}/cancel`);
+    extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

@@ -4,27 +4,26 @@ import type {
   GetStockTransactionsQueryParams,
 } from "@/domain/stockTransactions/StockTransactionTypes";
 import type { PaginatedList } from "@/domain/shared";
-
-function extractData<T>(response: any): T {
-  const result = response.data;
-  if (!result.succeeded) {
-    const message =
-      result.errors?.[0]?.description ?? result.error ?? "Request failed";
-    throw new Error(message);
-  }
-  return result.data;
-}
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 export async function getStockTransactions(
-  params: GetStockTransactionsQueryParams
+  params: GetStockTransactionsQueryParams,
 ): Promise<PaginatedList<StockTransactionListItemDto>> {
-  const response = await axiosClient.get("/stocktransactions", { params });
-  return extractData<PaginatedList<StockTransactionListItemDto>>(response);
+  try {
+    const response = await axiosClient.get("/stocktransactions", { params });
+    return extractData<PaginatedList<StockTransactionListItemDto>>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function getStockTransactionById(
-  id: string
+  id: string,
 ): Promise<StockTransactionListItemDto> {
-  const response = await axiosClient.get(`/stocktransactions/${id}`);
-  return extractData<StockTransactionListItemDto>(response);
+  try {
+    const response = await axiosClient.get(`/stocktransactions/${id}`);
+    return extractData<StockTransactionListItemDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

@@ -4,44 +4,48 @@ import type {
   CreateTradeRequest,
   UpdateTradeRequest,
 } from "@/domain/trades/TradeTypes";
-import type { Result } from "@/domain/shared/Result"; // Generic Result type
-
-// Helper to unwrap the standard Result<T> response
-function unwrap<T>(response: { data: Result<T> }): T {
-  const result = response.data;
-  if (!result.succeeded) {
-    const firstError = result.errors?.[0];
-    throw new Error(
-      firstError?.description || result.error || "An unknown error occurred",
-    );
-  }
-  return result.data as T;
-}
+import type { Result } from "@/domain/shared/Result";
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 /**
  * GET /api/trades
  */
 export async function fetchAllTrades(): Promise<TradeDto[]> {
-  const response = await axiosClient.get<Result<TradeDto[]>>("/trades");
-  return unwrap(response);
+  try {
+    const response = await axiosClient.get<Result<TradeDto[]>>("/trades");
+    return extractData<TradeDto[]>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
  * GET /api/trades/{id}
  */
 export async function fetchTradeById(id: string): Promise<TradeDto> {
-  const response = await axiosClient.get<Result<TradeDto>>(`/trades/${id}`);
-  return unwrap(response);
+  try {
+    const response = await axiosClient.get<Result<TradeDto>>(`/trades/${id}`);
+    return extractData<TradeDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
  * GET /api/trades/by-code?code=...
  */
 export async function fetchTradeByCode(code: string): Promise<TradeDto> {
-  const response = await axiosClient.get<Result<TradeDto>>("/trades/by-code", {
-    params: { code },
-  });
-  return unwrap(response);
+  try {
+    const response = await axiosClient.get<Result<TradeDto>>(
+      "/trades/by-code",
+      {
+        params: { code },
+      },
+    );
+    return extractData<TradeDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
@@ -50,25 +54,37 @@ export async function fetchTradeByCode(code: string): Promise<TradeDto> {
 export async function createTrade(
   request: CreateTradeRequest,
 ): Promise<string> {
-  const response = await axiosClient.post<Result<string>>("/trades", request);
-  return unwrap(response);
+  try {
+    const response = await axiosClient.post<Result<string>>("/trades", request);
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
  * PUT /api/trades/{id}
  */
 export async function updateTrade(request: UpdateTradeRequest): Promise<void> {
-  const response = await axiosClient.put<Result>(
-    `/trades/${request.id}`,
-    request,
-  );
-  unwrap(response); // void, returns nothing
+  try {
+    const response = await axiosClient.put<Result>(
+      `/trades/${request.id}`,
+      request,
+    );
+    extractData(response); // void, returns nothing
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
  * DELETE /api/trades/{id}
  */
 export async function deleteTrade(id: string): Promise<void> {
-  const response = await axiosClient.delete<Result>(`/trades/${id}`);
-  unwrap(response);
+  try {
+    const response = await axiosClient.delete<Result>(`/trades/${id}`);
+    extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

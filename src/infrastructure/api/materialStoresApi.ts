@@ -6,33 +6,30 @@ import type {
   UpdateMaterialStoreCommand,
   MaterialStoreQueryParams,
 } from "@/domain/materialStores/MaterialStoreTypes";
-
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 /**
  * Retrieves a paginated list of material stores.
  */
 export async function getMaterialStores(
   params: MaterialStoreQueryParams,
 ): Promise<PaginatedList<MaterialStoreDto>> {
-  const response = await axiosClient.get<
-    Result<PaginatedList<MaterialStoreDto>>
-  >("/materialstores", {
-    params: {
-      PageNumber: params.page,
-      PageSize: params.pageSize,
-      SearchTerm: params.searchTerm || undefined,
-      SortBy: params.sortBy || undefined,
-      SortDirection: params.sortDirection || undefined,
-    },
-  });
+  try {
+    const response = await axiosClient.get<
+      Result<PaginatedList<MaterialStoreDto>>
+    >("/materialstores", {
+      params: {
+        PageNumber: params.page,
+        PageSize: params.pageSize,
+        SearchTerm: params.searchTerm || undefined,
+        SortBy: params.sortBy || undefined,
+        SortDirection: params.sortDirection || undefined,
+      },
+    });
 
-  if (!response.data.succeeded) {
-    const firstError =
-      response.data.errors?.[0]?.description ||
-      "Failed to fetch material stores";
-    throw new Error(firstError);
+    return extractData<PaginatedList<MaterialStoreDto>>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-
-  return response.data.data!;
 }
 
 /**
@@ -41,17 +38,15 @@ export async function getMaterialStores(
 export async function getMaterialStoreById(
   id: string,
 ): Promise<MaterialStoreDto> {
-  const response = await axiosClient.get<Result<MaterialStoreDto>>(
-    `/materialstores/${id}`,
-  );
+  try {
+    const response = await axiosClient.get<Result<MaterialStoreDto>>(
+      `/materialstores/${id}`,
+    );
 
-  if (!response.data.succeeded) {
-    const firstError =
-      response.data.errors?.[0]?.description || "Material store not found";
-    throw new Error(firstError);
+    return extractData<MaterialStoreDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-
-  return response.data.data!;
 }
 
 /**
@@ -60,18 +55,16 @@ export async function getMaterialStoreById(
 export async function createMaterialStore(
   command: CreateMaterialStoreCommand,
 ): Promise<MaterialStoreDto> {
-  const response = await axiosClient.post<Result<MaterialStoreDto>>(
-    "/materialstores",
-    command,
-  );
+  try {
+    const response = await axiosClient.post<Result<MaterialStoreDto>>(
+      "/materialstores",
+      command,
+    );
 
-  if (!response.data.succeeded) {
-    const firstError =
-      response.data.errors?.[0]?.description || "Creation failed";
-    throw new Error(firstError);
+    return extractData<MaterialStoreDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-
-  return response.data.data!;
 }
 
 /**
@@ -81,15 +74,15 @@ export async function createMaterialStore(
 export async function updateMaterialStore(
   command: UpdateMaterialStoreCommand,
 ): Promise<void> {
-  const response = await axiosClient.put<Result>(
-    `/materialstores/${command.id}`,
-    command,
-  );
+  try {
+    const response = await axiosClient.put<Result>(
+      `/materialstores/${command.id}`,
+      command,
+    );
 
-  if (!response.data.succeeded) {
-    const firstError =
-      response.data.errors?.[0]?.description || "Update failed";
-    throw new Error(firstError);
+    return extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
 }
 
@@ -98,11 +91,11 @@ export async function updateMaterialStore(
  * Returns nothing on success (204 No Content).
  */
 export async function deleteMaterialStore(id: string): Promise<void> {
-  const response = await axiosClient.delete<Result>(`/materialstores/${id}`);
+  try {
+    const response = await axiosClient.delete<Result>(`/materialstores/${id}`);
 
-  if (!response.data.succeeded) {
-    const firstError =
-      response.data.errors?.[0]?.description || "Deletion failed";
-    throw new Error(firstError);
+    return extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
 }

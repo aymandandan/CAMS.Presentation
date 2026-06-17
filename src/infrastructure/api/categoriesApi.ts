@@ -7,70 +7,82 @@ import type {
   CreateCategoryRequest,
   UpdateCategoryRequest,
 } from "@/domain/categories/CategoryTypes";
-
-/**
- * Throws an error with the first error description from the response.
- */
-function throwIfErrors<T>(result: Result<T>): T {
-  if (!result.succeeded) {
-    const firstError = result.errors?.[0];
-    const message =
-      firstError?.description ?? result.error ?? "An unknown error occurred";
-    throw new Error(message);
-  }
-  return result.data as T;
-}
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 export async function getCategories(
   params: CategoriesQueryParams,
 ): Promise<PaginatedCategoryList> {
-  const { data } = await axiosClient.get<Result<PaginatedList<CategoryDto>>>(
-    "/categories",
-    {
-      params,
-    },
-  );
-  return throwIfErrors(data);
+  try {
+    const response = await axiosClient.get<Result<PaginatedList<CategoryDto>>>(
+      "/categories",
+      {
+        params,
+      },
+    );
+    return extractData<PaginatedList<CategoryDto>>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function getCategoryById(id: string): Promise<CategoryDto> {
-  const { data } = await axiosClient.get<Result<CategoryDto>>(
-    `/categories/${id}`,
-  );
-  return throwIfErrors(data);
+  try {
+    const response = await axiosClient.get<Result<CategoryDto>>(
+      `/categories/${id}`,
+    );
+    return extractData<CategoryDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function getCategoryByCode(code: string): Promise<CategoryDto> {
-  const { data } = await axiosClient.get<Result<CategoryDto>>(
-    "/categories/by-code",
-    {
-      params: { code },
-    },
-  );
-  return throwIfErrors(data);
+  try {
+    const response = await axiosClient.get<Result<CategoryDto>>(
+      "/categories/by-code",
+      {
+        params: { code },
+      },
+    );
+    return extractData<CategoryDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function createCategory(
   request: CreateCategoryRequest,
 ): Promise<string> {
-  const { data } = await axiosClient.post<Result<string>>(
-    "/categories",
-    request,
-  );
-  return throwIfErrors(data);
+  try {
+    const response = await axiosClient.post<Result<string>>(
+      "/categories",
+      request,
+    );
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function updateCategory(
   request: UpdateCategoryRequest,
 ): Promise<void> {
-  const { data } = await axiosClient.put<Result>(
-    `/categories/${request.categoryId}`,
-    request,
-  );
-  throwIfErrors(data);
+  try {
+    const response = await axiosClient.put<Result>(
+      `/categories/${request.categoryId}`,
+      request,
+    );
+    return extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  const { data } = await axiosClient.delete<Result>(`/categories/${id}`);
-  throwIfErrors(data);
+  try {
+    const response = await axiosClient.delete<Result>(`/categories/${id}`);
+    return extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

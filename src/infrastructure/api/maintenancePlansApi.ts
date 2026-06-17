@@ -7,57 +7,81 @@ import type {
   MaintenancePlansQueryParams,
 } from "@/domain/maintenancePlans/MaintenancePlanTypes";
 import { PaginatedList } from "@/domain/shared";
-
-function unwrapResult<T>(response: any): T {
-  const result = response.data;
-  if (!result.succeeded) {
-    const firstError = result.errors?.[0]?.description ?? "Request failed";
-    throw new Error(firstError);
-  }
-  return result.data as T;
-}
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 export async function getMaintenancePlans(
-  params: MaintenancePlansQueryParams
+  params: MaintenancePlansQueryParams,
 ): Promise<PaginatedList<MaintenancePlanListItemDto>> {
-  const response = await axiosClient.get("/maintenanceplans", { params });
-  return unwrapResult<PaginatedList<MaintenancePlanListItemDto>>(response);
+  try {
+    const response = await axiosClient.get("/maintenanceplans", { params });
+    return extractData<PaginatedList<MaintenancePlanListItemDto>>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function getMaintenancePlanById(
-  id: string
+  id: string,
 ): Promise<MaintenancePlanDetailsDto> {
-  const response = await axiosClient.get(`/maintenanceplans/${id}`);
-  return unwrapResult<MaintenancePlanDetailsDto>(response);
+  try {
+    const response = await axiosClient.get(`/maintenanceplans/${id}`);
+    return extractData<MaintenancePlanDetailsDto>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function createMaintenancePlan(
-  command: CreateMaintenancePlanRequest
+  command: CreateMaintenancePlanRequest,
 ): Promise<string> {
-  const response = await axiosClient.post("/maintenanceplans", command);
-  return unwrapResult<string>(response);
+  try {
+    const response = await axiosClient.post("/maintenanceplans", command);
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function updateMaintenancePlan(
   id: string,
-  command: UpdateMaintenancePlanRequest
+  command: UpdateMaintenancePlanRequest,
 ): Promise<void> {
-  const payload = { ...command, planId: id };
-  const response = await axiosClient.put(`/maintenanceplans/${id}`, payload);
-  unwrapResult(response);
+  try {
+    const payload = { ...command, planId: id };
+    const response = await axiosClient.put(`/maintenanceplans/${id}`, payload);
+    extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function activateMaintenancePlan(id: string): Promise<void> {
-  const response = await axiosClient.patch(`/maintenanceplans/${id}/activate`);
-  unwrapResult(response);
+  try {
+    const response = await axiosClient.patch(
+      `/maintenanceplans/${id}/activate`,
+    );
+    extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function deactivateMaintenancePlan(id: string): Promise<void> {
-  const response = await axiosClient.patch(`/maintenanceplans/${id}/deactivate`);
-  unwrapResult(response);
+  try {
+    const response = await axiosClient.patch(
+      `/maintenanceplans/${id}/deactivate`,
+    );
+    extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 export async function deleteMaintenancePlan(id: string): Promise<void> {
-  const response = await axiosClient.delete(`/maintenanceplans/${id}`);
-  unwrapResult(response);
+  try {
+    const response = await axiosClient.delete(`/maintenanceplans/${id}`);
+    extractData(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

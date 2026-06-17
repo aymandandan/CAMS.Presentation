@@ -13,8 +13,8 @@ export default function CAMSIcon() {
       >
         <defs>
           <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#3B82F6" />
-            <stop offset="100%" stop-color="#14B8A6" />
+            <stop offset="0%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#14B8A6" />
           </linearGradient>
 
           <filter id="iconShadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -22,8 +22,8 @@ export default function CAMSIcon() {
               dx="0"
               dy="4"
               stdDeviation="6"
-              flood-color="#3B82F6"
-              flood-opacity="0.25"
+              floodColor="#3B82F6"
+              floodOpacity="0.25"
             />
           </filter>
 
@@ -32,8 +32,8 @@ export default function CAMSIcon() {
               dx="0"
               dy="2"
               stdDeviation="2"
-              flood-color="#0F172A"
-              flood-opacity="0.25"
+              floodColor="#0F172A"
+              floodOpacity="0.25"
             />
           </filter>
 
@@ -56,9 +56,9 @@ export default function CAMSIcon() {
               pathLength="100"
               fill="none"
               stroke="black"
-              stroke-width="4.5"
-              stroke-dasharray="6.25 6.25"
-              stroke-dashoffset="-28.125"
+              strokeWidth="4.5"
+              strokeDasharray="6.25 6.25"
+              strokeDashoffset="-28.125"
             />
             <circle
               cx="22"
@@ -66,7 +66,7 @@ export default function CAMSIcon() {
               r="14"
               fill="none"
               stroke="black"
-              stroke-width="4.5"
+              strokeWidth="4.5"
             />
             <circle cx="22" cy="22" r="7" fill="black" />
             <path
@@ -82,14 +82,14 @@ export default function CAMSIcon() {
         </defs>
 
         <g transform="translate(0, 2)" filter="url(#iconShadow)">
-          <g clip-path="url(#iconClip)">
+          <g clipPath="url(#iconClip)">
             <polygon
               points="44,0 44,44 0,44"
               fill="url(#brandGrad)"
               mask="url(#bottomRightMask)"
             />
 
-            <g clip-path="url(#clipTL)">
+            <g clipPath="url(#clipTL)">
               <circle
                 cx="22"
                 cy="22"
@@ -97,9 +97,9 @@ export default function CAMSIcon() {
                 pathLength="100"
                 fill="none"
                 stroke="url(#brandGrad)"
-                stroke-width="4.5"
-                stroke-dasharray="6.25 6.25"
-                stroke-dashoffset="-28.125"
+                strokeWidth="4.5"
+                strokeDasharray="6.25 6.25"
+                strokeDashoffset="-28.125"
               />
               <circle
                 cx="22"
@@ -107,7 +107,7 @@ export default function CAMSIcon() {
                 r="14"
                 fill="none"
                 stroke="url(#brandGrad)"
-                stroke-width="4.5"
+                strokeWidth="4.5"
               />
               <circle cx="22" cy="22" r="7" fill="url(#brandGrad)" />
               <path
@@ -122,11 +122,11 @@ export default function CAMSIcon() {
           <text
             x="0"
             y="38"
-            font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-            font-weight="900"
-            font-size="28"
+            fontFamily="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+            fontWeight="900"
+            fontSize="28"
             fill="url(#brandGrad)"
-            letter-spacing="-0.5"
+            letterSpacing="-0.5"
           >
             CAMS
           </text>

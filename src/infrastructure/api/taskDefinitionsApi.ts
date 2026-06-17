@@ -1,5 +1,8 @@
 import { PaginatedList, Result } from "@/domain/shared";
-import { mapTaskDefinitionFromApi, mapTaskDefinitionToApi } from "@/domain/taskDefinitions/TaskDefinitionEnumMappings";
+import {
+  mapTaskDefinitionFromApi,
+  mapTaskDefinitionToApi,
+} from "@/domain/taskDefinitions/TaskDefinitionEnumMappings";
 import {
   TaskDefinitionSearchParams,
   TaskDefinition,
@@ -7,17 +10,7 @@ import {
   UpdateTaskDefinitionRequest,
 } from "@/domain/taskDefinitions/TaskDefinitionTypes";
 import axiosClient from "@/infrastructure/api/axiosClient";
-
-function throwIfFailed<T>(response: { data: Result<T> }): T {
-  const result = response.data;
-  if (!result.succeeded) {
-    console.error("API Error:", result);
-    const message =
-      result.errors?.[0]?.description || result.error || "Request failed";
-    throw new Error(message);
-  }
-  return result.data as T;
-}
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 /**
  * Fetch paginated list of task definitions.
@@ -25,18 +18,21 @@ function throwIfFailed<T>(response: { data: Result<T> }): T {
 export async function searchTaskDefinitions(
   params: TaskDefinitionSearchParams,
 ): Promise<PaginatedList<TaskDefinition>> {
-  // Map enum strings to numbers if they exist in the query params
-  const mappedParams = mapTaskDefinitionToApi(params);
-  const response = await axiosClient.get<Result<PaginatedList<TaskDefinition>>>(
-    "/taskdefinitions",
-    { params: mappedParams },
-  );
-  // If the backend returns numbers for type, convert to strings
-  const data = throwIfFailed(response);
-  return {
-    ...data,
-    items: data.items.map(mapTaskDefinitionFromApi),
-  };
+  try {
+    // Map enum strings to numbers if they exist in the query params
+    const mappedParams = mapTaskDefinitionToApi(params);
+    const response = await axiosClient.get<
+      Result<PaginatedList<TaskDefinition>>
+    >("/taskdefinitions", { params: mappedParams });
+    // If the backend returns numbers for type, convert to strings
+    const data = extractData<PaginatedList<TaskDefinition>>(response);
+    return {
+      ...data,
+      items: data.items.map(mapTaskDefinitionFromApi),
+    };
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
@@ -45,10 +41,14 @@ export async function searchTaskDefinitions(
 export async function getTaskDefinitionById(
   id: string,
 ): Promise<TaskDefinition> {
-  const response = await axiosClient.get<Result<TaskDefinition>>(
-    `/taskdefinitions/${id}`,
-  );
-  return mapTaskDefinitionFromApi(throwIfFailed(response));
+  try {
+    const response = await axiosClient.get<Result<TaskDefinition>>(
+      `/taskdefinitions/${id}`,
+    );
+    return mapTaskDefinitionFromApi(extractData<TaskDefinition>(response));
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
@@ -57,12 +57,16 @@ export async function getTaskDefinitionById(
 export async function createTaskDefinition(
   data: CreateTaskDefinitionRequest,
 ): Promise<string> {
-  const mappedData = mapTaskDefinitionToApi(data);
-  const response = await axiosClient.post<Result<string>>(
-    "/taskdefinitions",
-    mappedData,
-  );
-  return throwIfFailed(response);
+  try {
+    const mappedData = mapTaskDefinitionToApi(data);
+    const response = await axiosClient.post<Result<string>>(
+      "/taskdefinitions",
+      mappedData,
+    );
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
@@ -72,20 +76,28 @@ export async function updateTaskDefinition(
   id: string,
   data: UpdateTaskDefinitionRequest,
 ): Promise<void> {
-  const mappedData = mapTaskDefinitionToApi(data);
-  const response = await axiosClient.put<Result<void>>(
-    `/taskdefinitions/${id}`,
-    mappedData,
-  );
-  return throwIfFailed(response);
+  try {
+    const mappedData = mapTaskDefinitionToApi(data);
+    const response = await axiosClient.put<Result<void>>(
+      `/taskdefinitions/${id}`,
+      mappedData,
+    );
+    return extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }
 
 /**
  * Delete a task definition.
  */
 export async function deleteTaskDefinition(id: string): Promise<void> {
-  const response = await axiosClient.delete<Result<void>>(
-    `/taskdefinitions/${id}`,
-  );
-  return throwIfFailed(response);
+  try {
+    const response = await axiosClient.delete<Result<void>>(
+      `/taskdefinitions/${id}`,
+    );
+    return extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

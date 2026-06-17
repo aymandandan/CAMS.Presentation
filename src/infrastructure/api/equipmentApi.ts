@@ -11,6 +11,7 @@ import {
   mapEquipmentFromApi,
   mapEquipmentToApi,
 } from "@/domain/equipment/EquipmentEnumMappings";
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 /**
  * GET /api/equipment
@@ -18,21 +19,19 @@ import {
 export async function getEquipments(
   params: EquipmentSearchParams,
 ): Promise<PaginatedList<EquipmentListItemDto>> {
-  const response = await axiosClient.get<
-    Result<PaginatedList<EquipmentListItemDto>>
-  >("/equipment", { params });
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to fetch equipment",
-    );
+  try {
+    const response = await axiosClient.get<
+      Result<PaginatedList<EquipmentListItemDto>>
+    >("/equipment", { params });
+
+    const data = extractData<PaginatedList<EquipmentListItemDto>>(response);
+    return {
+      ...data,
+      items: data.items.map(mapEquipmentFromApi),
+    };
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-  const data = response.data.data!;
-  return {
-    ...data,
-    items: data.items.map(mapEquipmentFromApi),
-  };
 }
 
 /**
@@ -41,17 +40,15 @@ export async function getEquipments(
 export async function getEquipmentById(
   id: string,
 ): Promise<EquipmentDetailsDto> {
-  const response = await axiosClient.get<Result<EquipmentDetailsDto>>(
-    `/equipment/${id}`,
-  );
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to fetch equipment",
+  try {
+    const response = await axiosClient.get<Result<EquipmentDetailsDto>>(
+      `/equipment/${id}`,
     );
+
+    return mapEquipmentFromApi(extractData<EquipmentDetailsDto>(response));
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-  return mapEquipmentFromApi(response.data.data!);
 }
 
 /**
@@ -60,18 +57,16 @@ export async function getEquipmentById(
 export async function getEquipmentByCode(
   code: string,
 ): Promise<EquipmentDetailsDto> {
-  const response = await axiosClient.get<Result<EquipmentDetailsDto>>(
-    "/equipment/by-code",
-    { params: { code } },
-  );
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to fetch equipment by code",
+  try {
+    const response = await axiosClient.get<Result<EquipmentDetailsDto>>(
+      "/equipment/by-code",
+      { params: { code } },
     );
+
+    return mapEquipmentFromApi(extractData<EquipmentDetailsDto>(response));
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-  return mapEquipmentFromApi(response.data.data!);
 }
 
 /**
@@ -80,19 +75,17 @@ export async function getEquipmentByCode(
 export async function createEquipment(
   data: CreateEquipmentRequest,
 ): Promise<string> {
-  const mappedData = mapEquipmentToApi(data);
-  const response = await axiosClient.post<Result<string>>(
-    "/equipment",
-    mappedData,
-  );
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to create equipment",
+  try {
+    const mappedData = mapEquipmentToApi(data);
+    const response = await axiosClient.post<Result<string>>(
+      "/equipment",
+      mappedData,
     );
+
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
-  return response.data.data!;
 }
 
 /**
@@ -102,15 +95,11 @@ export async function updateEquipment(
   id: string,
   data: UpdateEquipmentRequest,
 ): Promise<void> {
-  // UpdateEquipmentRequest does not contain a status field, so no mapping needed.
-  // But if it ever did, we would call mapEquipmentToApi here.
-  const response = await axiosClient.put<Result>(`/equipment/${id}`, data);
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to update equipment",
-    );
+  try {
+    const response = await axiosClient.put<Result>(`/equipment/${id}`, data);
+    extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
 }
 
@@ -118,15 +107,13 @@ export async function updateEquipment(
  * PATCH /api/equipment/{id}/maintenance
  */
 export async function markUnderMaintenance(id: string): Promise<void> {
-  const response = await axiosClient.patch<Result>(
-    `/equipment/${id}/maintenance`,
-  );
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to mark equipment under maintenance",
+  try {
+    const response = await axiosClient.patch<Result>(
+      `/equipment/${id}/maintenance`,
     );
+    extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
 }
 
@@ -134,15 +121,13 @@ export async function markUnderMaintenance(id: string): Promise<void> {
  * PATCH /api/equipment/{id}/decommission
  */
 export async function decommissionEquipment(id: string): Promise<void> {
-  const response = await axiosClient.patch<Result>(
-    `/equipment/${id}/decommission`,
-  );
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to decommission equipment",
+  try {
+    const response = await axiosClient.patch<Result>(
+      `/equipment/${id}/decommission`,
     );
+    extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
 }
 
@@ -150,12 +135,10 @@ export async function decommissionEquipment(id: string): Promise<void> {
  * DELETE /api/equipment/{id}
  */
 export async function deleteEquipment(id: string): Promise<void> {
-  const response = await axiosClient.delete<Result>(`/equipment/${id}`);
-  if (!response.data.succeeded) {
-    throw new Error(
-      response.data.errors?.[0]?.description ||
-        response.data.error ||
-        "Failed to delete equipment",
-    );
+  try {
+    const response = await axiosClient.delete<Result>(`/equipment/${id}`);
+    extractData<void>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
   }
 }

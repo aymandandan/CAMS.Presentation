@@ -13,94 +13,128 @@ import {
   mapLocationToApi,
   mapLocationFromApi,
 } from "@/domain/locations/LocationEnumMappings";
-
-function throwIfFailed<T>(response: { data: Result<T> }): T {
-  const result = response.data;
-  if (!result.succeeded) {
-    console.error("API Error:", result);
-    const message =
-      result.errors?.[0]?.description || result.error || "Request failed";
-    throw new Error(message);
-  }
-  return result.data as T;
-}
+import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
 
 export const locationsApi = {
   getAll: async (
     params: GetLocationsQueryParams,
   ): Promise<PaginatedList<LocationDto>> => {
-    const mappedParams = mapLocationToApi(params);
-    const response = await axiosClient.get<Result<PaginatedList<LocationDto>>>(
-      "/locations",
-      { params: mappedParams },
-    );
-    const data = throwIfFailed(response);
-    return {
-      ...data,
-      items: data.items.map(mapLocationFromApi),
-    };
+    try {
+      const mappedParams = mapLocationToApi(params);
+      const response = await axiosClient.get<
+        Result<PaginatedList<LocationDto>>
+      >("/locations", { params: mappedParams });
+
+      const data = extractData<PaginatedList<LocationDto>>(response);
+      return {
+        ...data,
+        items: data.items.map(mapLocationFromApi),
+      };
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   getById: async (id: string): Promise<LocationDetailsDto> => {
-    const response = await axiosClient.get<Result<LocationDetailsDto>>(
-      `/locations/${id}`,
-    );
-    return mapLocationFromApi(throwIfFailed(response));
+    try {
+      const response = await axiosClient.get<Result<LocationDetailsDto>>(
+        `/locations/${id}`,
+      );
+
+      return mapLocationFromApi(extractData<LocationDetailsDto>(response));
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   getByCode: async (code: string): Promise<LocationDetailsDto> => {
-    const response = await axiosClient.get<Result<LocationDetailsDto>>(
-      "/locations/by-code",
-      { params: { code } },
-    );
-    return mapLocationFromApi(throwIfFailed(response));
+    try {
+      const response = await axiosClient.get<Result<LocationDetailsDto>>(
+        "/locations/by-code",
+        { params: { code } },
+      );
+
+      return mapLocationFromApi(extractData<LocationDetailsDto>(response));
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   getChildren: async (parentId: string): Promise<LocationDto[]> => {
-    const response = await axiosClient.get<Result<LocationDto[]>>(
-      `/locations/${parentId}/children`,
-    );
-    return throwIfFailed(response).map(mapLocationFromApi);
+    try {
+      const response = await axiosClient.get<Result<LocationDto[]>>(
+        `/locations/${parentId}/children`,
+      );
+
+      return extractData<LocationDto[]>(response).map(mapLocationFromApi);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   getPath: async (id: string): Promise<LocationPathDto> => {
-    const response = await axiosClient.get<Result<LocationPathDto>>(
-      `/locations/${id}/path`,
-    );
-    return throwIfFailed(response);
+    try {
+      const response = await axiosClient.get<Result<LocationPathDto>>(
+        `/locations/${id}/path`,
+      );
+
+      return extractData<LocationPathDto>(response);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   create: async (data: CreateLocationRequest): Promise<string> => {
-    const mappedData = mapLocationToApi(data);
-    const response = await axiosClient.post<Result<string>>(
-      "/locations",
-      mappedData,
-    );
-    return throwIfFailed(response);
+    try {
+      const mappedData = mapLocationToApi(data);
+      const response = await axiosClient.post<Result<string>>(
+        "/locations",
+        mappedData,
+      );
+
+      return extractData<string>(response);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   update: async (id: string, data: UpdateLocationRequest): Promise<void> => {
-    // Update request does not contain type, no mapping needed
-    const response = await axiosClient.put<Result>(`/locations/${id}`, {
-      ...data,
-      id,
-    });
-    throwIfFailed(response);
+    try {
+      // Update request does not contain type, no mapping needed
+      const response = await axiosClient.put<Result>(`/locations/${id}`, {
+        ...data,
+        id,
+      });
+
+      return extractData<void>(response);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   changeParent: async (
     id: string,
     request: ChangeLocationParentRequest,
   ): Promise<void> => {
-    const response = await axiosClient.patch<Result>(
-      `/locations/${id}/change-parent`,
-      request,
-    );
-    throwIfFailed(response);
+    try {
+      const response = await axiosClient.patch<Result>(
+        `/locations/${id}/change-parent`,
+        request,
+      );
+
+      return extractData<void>(response);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 
   delete: async (id: string): Promise<void> => {
-    const response = await axiosClient.delete<Result>(`/locations/${id}`);
-    throwIfFailed(response);
+    try {
+      const response = await axiosClient.delete<Result>(`/locations/${id}`);
+
+      return extractData<void>(response);
+    } catch (error) {
+      throw new Error(getErrorMessage(error));
+    }
   },
 };
