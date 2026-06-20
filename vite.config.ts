@@ -17,7 +17,7 @@ export default defineConfig({
     // Optional: proxy API requests to .NET backend during development
     proxy: {
       "/api": {
-        target: process.env.VITE_API_URL || "https://localhost:5001", // your .NET backend URL
+        target: process.env.VITE_API_BASE_URL || "https://localhost:5001", // your .NET backend URL
         changeOrigin: true,
         secure: false, // if using self-signed cert
       },
