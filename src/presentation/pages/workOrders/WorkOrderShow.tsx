@@ -62,8 +62,6 @@ import {
 } from "@/domain/workOrders/WorkOrderTypes";
 import dayjs from "dayjs";
 
-const ALLOWED_ROLES_FOR_WO_ASSIGNMENT: string[] = ["Manager"];
-
 /** Returns a small icon matching the task status. */
 function taskStatusIcon(status: WorkOrderTaskStatus) {
   switch (status) {
@@ -635,7 +633,6 @@ export default function WorkOrderShow() {
         open={pickerOpen}
         onClose={handleClosePicker}
         onSelect={handleUserPicked}
-        filterParams={{ rolesFilter: ALLOWED_ROLES_FOR_WO_ASSIGNMENT }}
         closeOnSelect={false}
       />
       <AssignUserConfirmDialog
