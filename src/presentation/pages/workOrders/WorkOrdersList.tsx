@@ -25,6 +25,8 @@ import {
   Divider,
   Badge,
   Chip,
+  FormGroup,
+  FormLabel,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -34,6 +36,7 @@ import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import PersonIcon from "@mui/icons-material/Person";
 import { Can } from "@/presentation/components/Can";
 import { Permissions } from "@/domain/shared/Permissions";
 import { useWorkOrders } from "@/application/hooks/workOrders/useWorkOrders";
@@ -45,6 +48,8 @@ import PageContainer from "@/presentation/components/PageContainer";
 import { useHasPermissions } from "@/application/hooks/usePermission/usePermission";
 import EquipmentPickerDialog from "@/presentation/components/pickers/EquipmentPickerDialog";
 import MaintenancePlanPickerDialog from "@/presentation/components/pickers/MaintenancePlanPickerDialog";
+import ActiveUserPickerDialog from "@/presentation/components/pickers/ActiveUserPickerDialog";
+import type { UserListItemDto } from "@/domain/users/UserTypes";
 
 // Toggle to true for server‑side sorting
 const SERVER_SIDE_SORT = false;
@@ -66,6 +71,12 @@ const ALL_COLUMNS = [
   { field: "type", label: "Type" },
   { field: "actions", label: "Actions" },
 ];
+
+// Helper: serialize/deserialize WorkOrderStatus array to/from comma‑separated string
+const serializeStatuses = (statuses: WorkOrderStatus[]): string =>
+  statuses.join(",");
+const deserializeStatuses = (str: string): WorkOrderStatus[] =>
+  str ? (str.split(",") as WorkOrderStatus[]) : [];
 
 function downloadCsv(
   rows: any[],
@@ -100,7 +111,7 @@ export default function WorkOrderList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { hasPermission } = useHasPermissions();
 
-  // URL‑driven applied filters (single source of truth)
+  // URL‑driven applied filters
   const page = Number(searchParams.get("page") || "0");
   const pageSize = Number(
     searchParams.get("pageSize") || String(INITIAL_PAGE_SIZE),
@@ -108,57 +119,73 @@ export default function WorkOrderList() {
   const typeFilter = searchParams.get("type") || undefined;
   const appliedFromDate = searchParams.get("fromDate") || "";
   const appliedToDate = searchParams.get("toDate") || "";
-  const appliedStatus = searchParams.get("status") || "";
+  const appliedStatuses = useMemo(
+    () => deserializeStatuses(searchParams.get("statuses") || ""),
+    [searchParams],
+  );
   const appliedPriority = searchParams.get("priority") || "";
   const appliedSearch = searchParams.get("search") || "";
   const appliedEquipmentId = searchParams.get("equipmentId") || "";
   const appliedPlanId = searchParams.get("planId") || "";
+  const appliedAssignedEmployeeId =
+    searchParams.get("assignedEmployeeId") || "";
   const appliedSortBy = searchParams.get("sortBy") || "";
   const appliedSortDirection = searchParams.get("sortDirection") as
     | "asc"
     | "desc"
     | "";
 
-  // Display names for equipment/plan (not stored in URL)
+  // Display names
   const [equipmentName, setEquipmentName] = useState("");
   const [planName, setPlanName] = useState("");
+  const [assignedEmployeeName, setAssignedEmployeeName] = useState("");
 
-  // Local filter state for popover – initialized from URL when popover opens
+  // Local filter state for popover
   const [filterAnchor, setFilterAnchor] = useState<HTMLElement | null>(null);
   const [localFromDate, setLocalFromDate] = useState(appliedFromDate);
   const [localToDate, setLocalToDate] = useState(appliedToDate);
-  const [localStatus, setLocalStatus] = useState(appliedStatus);
+  const [localStatuses, setLocalStatuses] =
+    useState<WorkOrderStatus[]>(appliedStatuses);
   const [localPriority, setLocalPriority] = useState(appliedPriority);
   const [localEquipmentId, setLocalEquipmentId] = useState(appliedEquipmentId);
   const [localEquipmentName, setLocalEquipmentName] = useState(equipmentName);
   const [localPlanId, setLocalPlanId] = useState(appliedPlanId);
   const [localPlanName, setLocalPlanName] = useState(planName);
+  const [localAssignedEmployeeId, setLocalAssignedEmployeeId] = useState(
+    appliedAssignedEmployeeId,
+  );
+  const [localAssignedEmployeeName, setLocalAssignedEmployeeName] =
+    useState(assignedEmployeeName);
 
-  // Sync local state when popover opens (so changes outside popover are reflected)
+  // Sync local state when popover opens
   useEffect(() => {
     if (filterAnchor) {
       setLocalFromDate(appliedFromDate);
       setLocalToDate(appliedToDate);
-      setLocalStatus(appliedStatus);
+      setLocalStatuses(appliedStatuses);
       setLocalPriority(appliedPriority);
       setLocalEquipmentId(appliedEquipmentId);
       setLocalEquipmentName(equipmentName);
       setLocalPlanId(appliedPlanId);
       setLocalPlanName(planName);
+      setLocalAssignedEmployeeId(appliedAssignedEmployeeId);
+      setLocalAssignedEmployeeName(assignedEmployeeName);
     }
   }, [
     filterAnchor,
     appliedFromDate,
     appliedToDate,
-    appliedStatus,
+    appliedStatuses,
     appliedPriority,
     appliedEquipmentId,
     appliedPlanId,
     equipmentName,
     planName,
+    appliedAssignedEmployeeId,
+    assignedEmployeeName,
   ]);
 
-  // Column visibility (local state only)
+  // Column visibility
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<
     Record<string, boolean>
   >(() => {
@@ -171,6 +198,7 @@ export default function WorkOrderList() {
   // Pickers
   const [equipmentPickerOpen, setEquipmentPickerOpen] = useState(false);
   const [planPickerOpen, setPlanPickerOpen] = useState(false);
+  const [employeePickerOpen, setEmployeePickerOpen] = useState(false);
 
   // Helper to update URL filters
   const setFilters = useCallback(
@@ -184,7 +212,6 @@ export default function WorkOrderList() {
             newParams.delete(key);
           }
         });
-        // Reset to first page when filters change
         newParams.set("page", "0");
         return newParams;
       });
@@ -199,29 +226,30 @@ export default function WorkOrderList() {
       pageSize,
       searchTerm: appliedSearch || undefined,
       type: typeFilter as any,
-      status: appliedStatus ? (appliedStatus as WorkOrderStatus) : undefined,
+      statuses: appliedStatuses.length > 0 ? appliedStatuses : undefined,
       priority: appliedPriority ? (appliedPriority as Priority) : undefined,
       fromDate: appliedFromDate || undefined,
       toDate: appliedToDate || undefined,
       equipmentId: appliedEquipmentId || undefined,
       planId: appliedPlanId || undefined,
+      assignedEmployeeId: appliedAssignedEmployeeId || undefined,
       sortBy: SERVER_SIDE_SORT ? appliedSortBy || undefined : undefined,
       sortDirection: SERVER_SIDE_SORT
         ? (appliedSortDirection as "asc" | "desc") || undefined
         : undefined,
-      isPaginated: true,
     }),
     [
       page,
       pageSize,
       appliedSearch,
       typeFilter,
-      appliedStatus,
+      appliedStatuses,
       appliedPriority,
       appliedFromDate,
       appliedToDate,
       appliedEquipmentId,
       appliedPlanId,
+      appliedAssignedEmployeeId,
       appliedSortBy,
       appliedSortDirection,
     ],
@@ -229,7 +257,7 @@ export default function WorkOrderList() {
 
   const { data, isLoading, isError, error, refetch } = useWorkOrders(query);
 
-  // Pagination change → update URL
+  // Pagination
   const handlePaginationModelChange = useCallback(
     (model: GridPaginationModel) => {
       setSearchParams((prev) => {
@@ -242,7 +270,7 @@ export default function WorkOrderList() {
     [setSearchParams],
   );
 
-  // Sorting model
+  // Sorting
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
   const handleSortModelChange = useCallback(
     (model: GridSortModel) => {
@@ -258,52 +286,57 @@ export default function WorkOrderList() {
     [SERVER_SIDE_SORT, setFilters],
   );
 
-  // Popover open/close
+  // Popover
   const handleFilterPopoverOpen = (event: React.MouseEvent<HTMLElement>) =>
     setFilterAnchor(event.currentTarget);
   const handleFilterPopoverClose = () => setFilterAnchor(null);
 
-  // Apply local filter state to URL
+  // Apply
   const applyAdvancedFilters = () => {
     setFilters({
       fromDate: localFromDate || undefined,
       toDate: localToDate || undefined,
-      status: localStatus || undefined,
+      statuses:
+        localStatuses.length > 0 ? serializeStatuses(localStatuses) : undefined,
       priority: localPriority || undefined,
       equipmentId: localEquipmentId || undefined,
       planId: localPlanId || undefined,
+      assignedEmployeeId: localAssignedEmployeeId || undefined,
     });
-    // Update names (from local state)
     setEquipmentName(localEquipmentName);
     setPlanName(localPlanName);
+    setAssignedEmployeeName(localAssignedEmployeeName);
     handleFilterPopoverClose();
   };
 
-  // Clear all advanced filters (local + URL)
+  // Clear all
   const clearAdvancedFilters = () => {
     setLocalFromDate("");
     setLocalToDate("");
-    setLocalStatus("");
+    setLocalStatuses([]);
     setLocalPriority("");
     setLocalEquipmentId("");
     setLocalEquipmentName("");
     setLocalPlanId("");
     setLocalPlanName("");
-    // Also clear URL and names
+    setLocalAssignedEmployeeId("");
+    setLocalAssignedEmployeeName("");
     setFilters({
       fromDate: undefined,
       toDate: undefined,
-      status: undefined,
+      statuses: undefined,
       priority: undefined,
       equipmentId: undefined,
       planId: undefined,
+      assignedEmployeeId: undefined,
     });
     setEquipmentName("");
     setPlanName("");
+    setAssignedEmployeeName("");
     handleFilterPopoverClose();
   };
 
-  // Equipment/plan picker handlers: set local state only
+  // Picker handlers
   const handleSelectEquipment = (eq: any) => {
     setLocalEquipmentId(eq.id);
     setLocalEquipmentName(eq.name || eq.code || "");
@@ -316,17 +349,33 @@ export default function WorkOrderList() {
     setPlanPickerOpen(false);
   };
 
-  // Determine if any advanced filter is active (for badge)
+  const handleSelectEmployee = (user: UserListItemDto) => {
+    setLocalAssignedEmployeeId(user.id);
+    setLocalAssignedEmployeeName(user.fullName || user.email);
+    setEmployeePickerOpen(false);
+  };
+
+  // Toggle a status in local array
+  const toggleLocalStatus = (status: WorkOrderStatus) => {
+    setLocalStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status],
+    );
+  };
+
+  // Badge active indicator
   const isFilterActive = !!(
     appliedFromDate ||
     appliedToDate ||
-    appliedStatus ||
+    appliedStatuses.length > 0 ||
     appliedPriority ||
     appliedEquipmentId ||
-    appliedPlanId
+    appliedPlanId ||
+    appliedAssignedEmployeeId
   );
 
-  // Columns definition
+  // Columns
   const columns: GridColDef[] = useMemo(() => {
     const baseColumns: GridColDef[] = [
       { field: "code", headerName: "Code", width: 120, sortable: true },
@@ -456,7 +505,7 @@ export default function WorkOrderList() {
       breadcrumbs={[{ title: "Work Orders" }]}
       actions={
         <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-          <Tooltip title="Refresh" enterDelay={1000}>
+          <Tooltip title="Refresh">
             <IconButton size="small" onClick={() => refetch()}>
               <RefreshIcon fontSize="small" />
             </IconButton>
@@ -474,12 +523,11 @@ export default function WorkOrderList() {
       }
     >
       <Box sx={{ flex: 1, width: "100%" }}>
-        {/* Type tabs */}
         <Tabs
           value={typeFilter ?? "all"}
-          onChange={(_, newValue: string) => {
-            setFilters({ type: newValue === "all" ? undefined : newValue });
-          }}
+          onChange={(_, newValue: string) =>
+            setFilters({ type: newValue === "all" ? undefined : newValue })
+          }
           sx={{ mb: 2 }}
         >
           {TYPE_TABS.map((tab) => (
@@ -487,7 +535,6 @@ export default function WorkOrderList() {
           ))}
         </Tabs>
 
-        {/* Main filter bar */}
         <Stack
           direction="row"
           sx={{ flexWrap: "wrap", gap: 2, mb: 2, alignItems: "center" }}
@@ -531,7 +578,6 @@ export default function WorkOrderList() {
           </Tooltip>
         </Stack>
 
-        {/* Data grid */}
         {isError ? (
           <Box sx={{ flexGrow: 1 }}>
             <Typography color="error">{(error as Error)?.message}</Typography>
@@ -553,9 +599,7 @@ export default function WorkOrderList() {
             sortingMode={SERVER_SIDE_SORT ? "server" : "client"}
             sortModel={sortModel}
             onSortModelChange={handleSortModelChange}
-            sx={{
-              [`& .${gridClasses.row}:hover`]: { cursor: "pointer" },
-            }}
+            sx={{ [`& .${gridClasses.row}:hover`]: { cursor: "pointer" } }}
           />
         )}
       </Box>
@@ -568,7 +612,7 @@ export default function WorkOrderList() {
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <Box sx={{ p: 2, minWidth: 300, maxWidth: 360 }}>
+        <Box sx={{ p: 2, minWidth: 320, maxWidth: 380 }}>
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
             Advanced Filters
           </Typography>
@@ -606,22 +650,32 @@ export default function WorkOrderList() {
               <MenuItem value={Priority.Urgent}>Urgent</MenuItem>
               <MenuItem value={Priority.Critical}>Critical</MenuItem>
             </TextField>
-            <TextField
-              select
-              label="Status"
-              size="small"
-              fullWidth
-              value={localStatus}
-              onChange={(e) => setLocalStatus(e.target.value)}
-              slotProps={{ select: { displayEmpty: true } }}
-            >
-              <MenuItem value="">All</MenuItem>
-              {Object.values(WorkOrderStatus).map((status) => (
-                <MenuItem key={status} value={status}>
-                  {status}
-                </MenuItem>
-              ))}
-            </TextField>
+
+            {/* Multi‑select statuses */}
+            <Box>
+              <FormLabel
+                component="legend"
+                sx={{ fontSize: "0.875rem", mb: 0.5 }}
+              >
+                Status
+              </FormLabel>
+              <FormGroup row>
+                {Object.values(WorkOrderStatus).map((status) => (
+                  <FormControlLabel
+                    key={status}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={localStatuses.includes(status)}
+                        onChange={() => toggleLocalStatus(status)}
+                      />
+                    }
+                    label={status}
+                    sx={{ mr: 1, minWidth: "30%" }}
+                  />
+                ))}
+              </FormGroup>
+            </Box>
 
             {/* Equipment picker */}
             <Box>
@@ -669,6 +723,33 @@ export default function WorkOrderList() {
                   onDelete={() => {
                     setLocalPlanId("");
                     setLocalPlanName("");
+                  }}
+                  sx={{ mt: 0.5 }}
+                />
+              )}
+            </Box>
+
+            {/* Assigned Employee picker */}
+            <Box>
+              <Button
+                variant="outlined"
+                size="small"
+                fullWidth
+                startIcon={<PersonIcon />}
+                onClick={() => setEmployeePickerOpen(true)}
+                sx={{ justifyContent: "flex-start" }}
+              >
+                {localAssignedEmployeeId
+                  ? `Assigned: ${localAssignedEmployeeName || localAssignedEmployeeId}`
+                  : "Select Assigned Employee"}
+              </Button>
+              {localAssignedEmployeeId && (
+                <Chip
+                  label={localAssignedEmployeeName || localAssignedEmployeeId}
+                  size="small"
+                  onDelete={() => {
+                    setLocalAssignedEmployeeId("");
+                    setLocalAssignedEmployeeName("");
                   }}
                   sx={{ mt: 0.5 }}
                 />
@@ -735,6 +816,13 @@ export default function WorkOrderList() {
         open={planPickerOpen}
         onClose={() => setPlanPickerOpen(false)}
         onSelect={handleSelectPlan}
+      />
+      <ActiveUserPickerDialog
+        open={employeePickerOpen}
+        onClose={() => setEmployeePickerOpen(false)}
+        onSelect={handleSelectEmployee}
+        // Optional: add filterParams if needed, e.g., only active employees
+        closeOnSelect
       />
     </PageContainer>
   );

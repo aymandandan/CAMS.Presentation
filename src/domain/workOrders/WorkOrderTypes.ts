@@ -209,12 +209,12 @@ export interface ReturnMaterialsCommand {
 
 // --------------- Query / Filters ---------------
 export interface GetFilteredWorkOrdersQuery extends SortablePaginationRequestInfo {
-  status?: WorkOrderStatus;
+  statuses?: WorkOrderStatus[];
   type?: WorkOrderType;
   fromDate?: string;
   toDate?: string;
   priority?: Priority;
   equipmentId?: string;
   planId?: string;
-  isPaginated?: boolean;
+  assignedEmployeeId?: string;
 }

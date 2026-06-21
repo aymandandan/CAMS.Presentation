@@ -18,6 +18,7 @@ import {
   cancelWorkOrder,
   issueMaterials,
   returnMaterials,
+  getMyWorkOrders,
 } from "@/infrastructure/api/workOrderApi";
 import type {
   GetFilteredWorkOrdersQuery,
@@ -45,6 +46,18 @@ export function useWorkOrders(
   return useQuery<PaginatedList<WorkOrderListItemDto>>({
     queryKey: ["workOrders", params],
     queryFn: () => getWorkOrders(params),
+    placeholderData: keepPreviousData,
+    ...options,
+  });
+}
+
+export function useMyWorkOrders(
+  params: GetFilteredWorkOrdersQuery,
+  options?: { enabled?: boolean },
+) {
+  return useQuery<PaginatedList<WorkOrderListItemDto>>({
+    queryKey: ["myWorkOrders", params],
+    queryFn: () => getMyWorkOrders(params),
     placeholderData: keepPreviousData,
     ...options,
   });

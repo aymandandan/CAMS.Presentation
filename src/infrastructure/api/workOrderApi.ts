@@ -28,9 +28,7 @@ export async function getWorkOrders(
   try {
     const queryParams: Record<string, any> = {
       searchTerm: params.searchTerm,
-      status: params.status
-        ? mapWorkOrderToApi({ status: params.status }).status
-        : undefined,
+      statuses: params.statuses, // array → repeated query params
       type: params.type
         ? mapWorkOrderToApi({ type: params.type }).type
         : undefined,
@@ -41,12 +39,47 @@ export async function getWorkOrders(
         : undefined,
       equipmentId: params.equipmentId,
       planId: params.planId,
+      assignedEmployeeId: params.assignedEmployeeId,
       page: params.page,
       pageSize: params.pageSize,
-      isPaginated: params.isPaginated,
     };
 
     const response = await axiosClient.get("/workorders", {
+      params: queryParams,
+    });
+    const data = extractData<PaginatedList<WorkOrderListItemDto>>(response);
+    return {
+      ...data,
+      items: data.items.map(mapWorkOrderFromApi),
+    };
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMyWorkOrders(
+  params: GetFilteredWorkOrdersQuery,
+): Promise<PaginatedList<WorkOrderListItemDto>> {
+  try {
+    const queryParams: Record<string, any> = {
+      searchTerm: params.searchTerm,
+      statuses: params.statuses,
+      type: params.type
+        ? mapWorkOrderToApi({ type: params.type }).type
+        : undefined,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+      priority: params.priority
+        ? mapWorkOrderToApi({ priority: params.priority }).priority
+        : undefined,
+      equipmentId: params.equipmentId,
+      planId: params.planId,
+      // assignedEmployeeId is forced by the backend, no need to send
+      page: params.page,
+      pageSize: params.pageSize,
+    };
+
+    const response = await axiosClient.get("/workorders/my", {
       params: queryParams,
     });
     const data = extractData<PaginatedList<WorkOrderListItemDto>>(response);
