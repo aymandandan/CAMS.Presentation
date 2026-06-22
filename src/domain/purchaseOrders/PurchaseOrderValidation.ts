@@ -1,26 +1,23 @@
-import type { CreatePurchaseOrderRequest } from "./PurchaseOrderTypes";
+import type {
+  CreatePurchaseOrderRequest,
+  PurchaseOrderLineInput,
+  UpdatePurchaseOrderRequest,
+} from "./PurchaseOrderTypes";
 
 interface ValidationIssue {
   path: string[];
   message: string;
 }
 
-export function validateCreatePurchaseOrder(
-  values: Partial<CreatePurchaseOrderRequest>
-): { issues: ValidationIssue[] } {
+function validateLines(lines: PurchaseOrderLineInput[]): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
-
-  if (!values.vendorId) {
-    issues.push({ path: ["vendorId"], message: "Vendor is required" });
-  }
-  if (!values.orderDate) {
-    issues.push({ path: ["orderDate"], message: "Order date is required" });
-  }
-
-  if (!values.lines || values.lines.length === 0) {
-    issues.push({ path: ["lines"], message: "At least one order line is required" });
+  if (!lines || lines.length === 0) {
+    issues.push({
+      path: ["lines"],
+      message: "At least one order line is required",
+    });
   } else {
-    values.lines.forEach((line, index) => {
+    lines.forEach((line, index) => {
       if (!line.itemId) {
         issues.push({
           path: ["lines", String(index), "itemId"],
@@ -59,6 +56,31 @@ export function validateCreatePurchaseOrder(
       }
     });
   }
+  return issues;
+}
 
+export function validateCreatePurchaseOrder(
+  values: Partial<CreatePurchaseOrderRequest>,
+): { issues: ValidationIssue[] } {
+  const issues: ValidationIssue[] = [];
+  if (!values.vendorId)
+    issues.push({ path: ["vendorId"], message: "Vendor is required" });
+  if (!values.orderDate)
+    issues.push({ path: ["orderDate"], message: "Order date is required" });
+  issues.push(...validateLines(values.lines ?? []));
+  return { issues };
+}
+
+export function validateUpdatePurchaseOrder(
+  values: Partial<UpdatePurchaseOrderRequest>,
+): { issues: ValidationIssue[] } {
+  const issues: ValidationIssue[] = [];
+  if (!values.id)
+    issues.push({ path: ["id"], message: "Order ID is required" });
+  if (!values.vendorId)
+    issues.push({ path: ["vendorId"], message: "Vendor is required" });
+  if (!values.orderDate)
+    issues.push({ path: ["orderDate"], message: "Order date is required" });
+  issues.push(...validateLines(values.lines ?? []));
   return { issues };
 }

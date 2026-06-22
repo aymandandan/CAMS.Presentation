@@ -10,12 +10,14 @@ import {
   createPurchaseOrder,
   receivePurchaseOrder,
   cancelPurchaseOrder,
+  updatePurchaseOrder,
 } from "@/infrastructure/api/purchaseOrdersApi";
 import type {
   PurchaseOrderListItemDto,
   PurchaseOrderDetailsDto,
   CreatePurchaseOrderRequest,
   GetPurchaseOrdersQueryParams,
+  UpdatePurchaseOrderRequest,
 } from "@/domain/purchaseOrders/PurchaseOrderTypes";
 import type { PaginatedList } from "@/domain/shared";
 
@@ -53,6 +55,21 @@ export function useCreatePurchaseOrder() {
     mutationFn: (data) => createPurchaseOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.lists() });
+    },
+  });
+}
+
+export function useUpdatePurchaseOrder() {
+  const queryClient = useQueryClient();
+  return useMutation<
+    string,
+    Error,
+    { id: string; data: UpdatePurchaseOrderRequest }
+  >({
+    mutationFn: ({ id, data }) => updatePurchaseOrder(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.detail(id) });
     },
   });
 }

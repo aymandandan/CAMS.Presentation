@@ -199,6 +199,10 @@ export const allPermissions: PermissionDefinition[] = [
     description: "View purchase orders",
   },
   {
+    name: "permission:purchaseorders.update",
+    description: "Update purchase orders",
+  },
+  {
     name: "permission:purchaseorders.receive",
     description: "Receive purchase orders (update inventory)",
   },

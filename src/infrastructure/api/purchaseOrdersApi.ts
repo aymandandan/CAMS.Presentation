@@ -4,6 +4,7 @@ import type {
   PurchaseOrderDetailsDto,
   CreatePurchaseOrderRequest,
   GetPurchaseOrdersQueryParams,
+  UpdatePurchaseOrderRequest,
 } from "@/domain/purchaseOrders/PurchaseOrderTypes";
 import type { PaginatedList } from "@/domain/shared";
 import { extractData, getErrorMessage } from "@/lib/utils/ResponseUtils";
@@ -35,6 +36,18 @@ export async function createPurchaseOrder(
 ): Promise<string> {
   try {
     const response = await axiosClient.post("/purchaseorders", data);
+    return extractData<string>(response);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function updatePurchaseOrder(
+  id: string,
+  data: UpdatePurchaseOrderRequest,
+): Promise<string> {
+  try {
+    const response = await axiosClient.put(`/purchaseorders/${id}`, data);
     return extractData<string>(response);
   } catch (error) {
     throw new Error(getErrorMessage(error));

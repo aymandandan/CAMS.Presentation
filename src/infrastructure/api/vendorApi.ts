@@ -16,7 +16,7 @@ export const vendorApi = {
         "/vendors",
         { params },
       );
-      return extractData<VendorPaginatedList>(response.data);
+      return extractData<VendorPaginatedList>(response);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -27,7 +27,7 @@ export const vendorApi = {
       const response = await axiosClient.get<Result<VendorDto>>(
         `/vendors/${id}`,
       );
-      return extractData<VendorDto>(response.data);
+      return extractData<VendorDto>(response);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -36,7 +36,7 @@ export const vendorApi = {
   async create(data: CreateVendorRequest): Promise<string> {
     try {
       const response = await axiosClient.post<Result<string>>("/vendors", data);
-      return extractData<string>(response.data);
+      return extractData<string>(response);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -48,7 +48,7 @@ export const vendorApi = {
         `/vendors/${id}`,
         data,
       );
-      return extractData<VendorDto>(response.data);
+      return extractData<VendorDto>(response);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }
@@ -57,7 +57,7 @@ export const vendorApi = {
   async delete(id: string): Promise<void> {
     try {
       const response = await axiosClient.delete<Result>(`/vendors/${id}`);
-      extractData(response.data);
+      extractData(response);
     } catch (error) {
       throw new Error(getErrorMessage(error));
     }

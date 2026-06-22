@@ -77,6 +77,7 @@ export const Permissions = {
   PurchaseOrders: {
     Create: "permission:purchaseorders.create",
     Read: "permission:purchaseorders.read",
+    Update: "permission:purchaseorders.update",
     Receive: "permission:purchaseorders.receive",
     Cancel: "permission:purchaseorders.cancel",
   },

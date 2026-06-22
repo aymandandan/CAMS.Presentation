@@ -36,6 +36,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import EditIcon from "@mui/icons-material/Edit";
+import { useHasPermissions } from "@/application/hooks/usePermission/usePermission";
 import { Can } from "@/presentation/components/Can";
 import { Permissions } from "@/domain/shared/Permissions";
 import { usePurchaseOrders } from "@/application/hooks/purchaseOrders/usePurchaseOrders";
@@ -89,6 +91,7 @@ function downloadCsv(
 
 export default function PurchaseOrderList() {
   const navigate = useNavigate();
+  const { hasPermission } = useHasPermissions();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL‑driven applied filters
@@ -335,18 +338,38 @@ export default function PurchaseOrderList() {
         type: "actions",
         width: 80,
         sortable: false,
-        getActions: ({ row }) => [
-          <GridActionsCellItem
-            key="view"
-            icon={<VisibilityIcon fontSize="small" />}
-            label="View"
-            onClick={() => navigate(`/purchase-orders/${row.id}`)}
-            showInMenu
-          />,
-        ],
+        getActions: ({ row }) => {
+          const actions = [
+            <GridActionsCellItem
+              key="view"
+              icon={<VisibilityIcon fontSize="small" />}
+              label="View"
+              onClick={() => navigate(`/purchase-orders/${row.id}`)}
+              showInMenu
+            />,
+          ];
+
+          // ★ Add Edit action for Draft orders with permission
+          if (
+            row.status === "Draft" &&
+            hasPermission(Permissions.PurchaseOrders.Update)
+          ) {
+            actions.push(
+              <GridActionsCellItem
+                key="edit"
+                icon={<EditIcon fontSize="small" />}
+                label="Edit"
+                onClick={() => navigate(`/purchase-orders/${row.id}/edit`)}
+                showInMenu
+              />,
+            );
+          }
+
+          return actions;
+        },
       },
     ],
-    [navigate],
+    [navigate, hasPermission],
   );
 
   // Column visibility toggle

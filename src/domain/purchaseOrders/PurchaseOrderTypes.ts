@@ -64,6 +64,13 @@ export interface CreatePurchaseOrderRequest {
   lines: PurchaseOrderLineInput[];
 }
 
+export interface UpdatePurchaseOrderRequest {
+  id: string; // set from route, not from user input
+  vendorId: string;
+  orderDate: string; // ISO date string
+  lines: PurchaseOrderLineInput[];
+}
+
 // --------------- Query Parameters ---------------
 export interface GetPurchaseOrdersQueryParams extends SortablePaginationRequestInfo {
   vendorId?: string;

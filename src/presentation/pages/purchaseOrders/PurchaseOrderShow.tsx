@@ -24,6 +24,7 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import BusinessIcon from "@mui/icons-material/Business";
 import EventIcon from "@mui/icons-material/Event";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import EditIcon from "@mui/icons-material/Edit";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -173,6 +174,7 @@ export default function PurchaseOrderShow() {
           Back
         </Button>
         <Stack direction="row" spacing={2}>
+          {/* Existing Vendor button */}
           <Can requiredPermissions={[Permissions.Vendors.View]}>
             <Button
               variant="outlined"
@@ -180,6 +182,18 @@ export default function PurchaseOrderShow() {
               onClick={() => navigate(`/vendors/${order.vendorId}`)}
             >
               Vendor
+            </Button>
+          </Can>
+
+          {/* ★ New Edit button (Draft only) */}
+          <Can requiredPermissions={[Permissions.PurchaseOrders.Update]}>
+            <Button
+              variant="contained"
+              startIcon={<EditIcon />}
+              disabled={!isDraft}
+              onClick={() => navigate(`/purchase-orders/${order.id}/edit`)}
+            >
+              Edit
             </Button>
           </Can>
         </Stack>

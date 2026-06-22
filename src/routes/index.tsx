@@ -27,6 +27,7 @@ import MaterialStoreEdit from "@/presentation/pages/materialStores/MaterialStore
 import MaterialStoreList from "@/presentation/pages/materialStores/MaterialStoreList";
 import MaterialStoreShow from "@/presentation/pages/materialStores/MaterialStoreShow";
 import PurchaseOrderCreate from "@/presentation/pages/purchaseOrders/PurchaseOrderCreate";
+import PurchaseOrderEdit from "@/presentation/pages/purchaseOrders/PurchaseOrderEdit";
 import PurchaseOrderList from "@/presentation/pages/purchaseOrders/PurchaseOrderList";
 import PurchaseOrderShow from "@/presentation/pages/purchaseOrders/PurchaseOrderShow";
 import RoleCreate from "@/presentation/pages/roles/RoleCreate";
@@ -290,6 +291,10 @@ const router = createBrowserRouter([
           {
             path: "/purchase-orders/:purchaseOrderId",
             Component: PurchaseOrderShow,
+          },
+          {
+            path: "/purchase-orders/:purchaseOrderId/edit",
+            Component: PurchaseOrderEdit,
           },
           // Stock Transaction routes
           {
